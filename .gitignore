@@ -72,3 +72,13 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+Content/LowPolyForest/Maps/Demo_Map_01.umap
+Content/LowPolyForest/Maps/Demo_Map_02.umap
+Content/LowPolyForest/Maps/Overview.umap
+Content/PhotoR_Backgrounds/Maps/Overview_Map.umap
+Content/PhotoR_Backgrounds/Maps/Showcase_afghan_1.umap
+Content/PhotoR_Backgrounds/Maps/Showcase_afghan_2.umap
+Content/PhotoR_Backgrounds/Maps/Showcase_canyon_a.umap
+Content/PhotoR_Backgrounds/Maps/Showcase_canyon_b.umap
+Content/PhotoR_Backgrounds/Maps/Showcase_canyon_c.umap
+Content/PhotoR_Backgrounds/Maps/Showcase_desert.umap
