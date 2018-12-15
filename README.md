@@ -5,3 +5,4 @@ Aim Practise is a self-explanatory title for a game. It's purpose is to help eve
 
 ## What can Aim-Practise currently offer?
 #### 4 Different Weapons
+![AR](/Saved/Screenshots/AR.PNG)
