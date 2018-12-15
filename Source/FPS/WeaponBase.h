@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "GameplayStructs.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/SceneComponent.h"
 #include "WeaponBase.generated.h"
 
 UCLASS()
