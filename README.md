@@ -3,19 +3,28 @@
 #### What is Aim-Practise?
 Aim Practise is a self-explanatory title for a game. It's purpose is to help every player improve their muscle memory to utilize during gameplay in many other FPS games that require fast reactions and accurate crosshair movement.
 
+## What will Aim-Practise offer in the future?
+### Fully customizable weapons.
+### Attachments for weapons.
+### Customizable time/weather.
+### Customizable Crosshairs.
+### Many more maps to practise on.
+
 ## What can Aim-Practise currently offer?
-### 5 Different Weapons
+### Simple GUI.
+### Bullet speed mechanics.
+### Five different weapons.
 #### Assault Rifle
 ![AR](/Screenshots/AR.PNG)
 
 #### AK-47
-![AR](/Screenshots/AK.PNG)
+![AK-47](/Screenshots/AK.PNG)
 
 #### AK-47U
-![AR](/Screenshots/AKU.PNG)
+![AK-47U](/Screenshots/AKU.PNG)
 
 #### Shotgun
-![AR](/Screenshots/SK.PNG)
+![SK](/Screenshots/SK.PNG)
 
 #### MAC-10
-![AR](/Screenshots/MAC.PNG)
+![MAC](/Screenshots/MAC.PNG)
