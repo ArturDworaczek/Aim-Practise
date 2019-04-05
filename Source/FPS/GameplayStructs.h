@@ -9,7 +9,7 @@
 #include "GameplayStructs.generated.h"
 
 USTRUCT(BlueprintType)
-struct FWeaponStruct
+struct FWeaponDetailsStruct
 {
 	GENERATED_USTRUCT_BODY();
 
@@ -28,13 +28,50 @@ struct FWeaponStruct
 	/** Current Amount Of Ammunition */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Gameplay) int32 CurrentAmmunition;
 	/** Amount of ammo in stockpile */
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Gameplay) int32 StockPile;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Gameplay) int32 StockPile;
 	/** Fire rate to shoot at */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Gameplay) float FireRate;
 	/** Reload time to reload at */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Gameplay) float ReloadTime;
 	/** Kickback amount to kick up after a shot */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Gameplay) float KickbackAmount;
+};
+
+UENUM(BlueprintType)
+enum class EWeaponSightEquipped : uint8
+{
+	WSE_None 	UMETA(DisplayName = "None"),
+	WSE_S56 	UMETA(DisplayName = "Scope 25x56"),
+	WSE_RDot	UMETA(DisplayName = "Red Dot")
+};
+
+UENUM(BlueprintType)
+enum class EWeaponGripEquipped : uint8
+{
+	WGE_None 	UMETA(DisplayName = "None"),
+	WGE_VGrip 	UMETA(DisplayName = "Vertical Grip"),
+};
+
+UENUM(BlueprintType)
+enum class EWeaponSuppressorEquipped : uint8
+{
+	WSUE_None 		UMETA(DisplayName = "None"),
+	WSUE_Standard 	UMETA(DisplayName = "Standard"),
+};
+
+USTRUCT(BlueprintType)
+struct FWeaponStruct
+{
+	GENERATED_USTRUCT_BODY();
+
+	/** Weapon */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Gameplay) FWeaponDetailsStruct Weapon;
+	/** Weapon Sight Attached */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Gameplay) EWeaponSightEquipped WeaponSight;
+	/** Weapon Grip Attached */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Gameplay) EWeaponGripEquipped WeaponGrip;
+	/** Weapon Suppressor Attached */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Gameplay) EWeaponSuppressorEquipped WeaponSuppressor;
 };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))

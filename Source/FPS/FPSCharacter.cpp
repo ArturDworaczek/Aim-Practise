@@ -34,20 +34,27 @@ AFPSCharacter::AFPSCharacter()
 	Camera->RelativeLocation = FVector(-39.56f, 1.75f, 64.f); // Position the camera
 	Camera->bUsePawnControlRotation = true;
 
-	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
-	PlayerMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("PlayerMesh"));
-	PlayerMesh->SetOnlyOwnerSee(true);
-	PlayerMesh->SetupAttachment(Camera);
-	PlayerMesh->bCastDynamicShadow = false;
-	PlayerMesh->CastShadow = false;
-	PlayerMesh->RelativeRotation = FRotator(1.9f, -19.19f, 5.2f);
-	PlayerMesh->RelativeLocation = FVector(-0.5f, -4.4f, -155.7f);
-
 	// Create a gun mesh component
 	GunMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GunMesh"));
 	GunMesh->bCastDynamicShadow = false;
 	GunMesh->CastShadow = false;
-	GunMesh->SetupAttachment(Camera);
+	GunMesh->SetupAttachment(GetMesh());
+
+	Suppressor = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Suppressor"));
+	Suppressor->SetupAttachment(GunMesh);
+	Suppressor->bVisible = false;
+
+	VerticalGrip = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Vertical Grip"));
+	VerticalGrip->SetupAttachment(GunMesh);
+	VerticalGrip->bVisible = false;
+
+	RedDotSight = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Red Dot Sight"));
+	RedDotSight->SetupAttachment(GunMesh);
+	RedDotSight->bVisible = false;
+
+	S56 = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Sniper 25x56 Sight"));
+	S56->SetupAttachment(GunMesh);
+	S56->bVisible = false;
 
 	MuzzleLocation = CreateDefaultSubobject<USceneComponent>(TEXT("MuzzleLocation"));
 	MuzzleLocation->SetupAttachment(GunMesh);
@@ -77,8 +84,8 @@ void AFPSCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInput
 	// Bind movement events
 	PlayerInputComponent->BindAxis("MoveForward", this, &AFPSCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AFPSCharacter::MoveRight);
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("Turn", this, &AFPSCharacter::TurnHorizontal);
+	PlayerInputComponent->BindAxis("LookUp", this, &AFPSCharacter::TurnVertical);
 }
 void AFPSCharacter::OnFireStart()
 {
@@ -87,14 +94,14 @@ void AFPSCharacter::OnFireStart()
 		GetWorldTimerManager().ClearTimer(ReloadTimer);
 	}
 
-	if (GetGunMesh()->SkeletalMesh != NULL)
+	if (GetGunMesh()->SkeletalMesh != nullptr)
 	{
-		if (Weapon.CurrentAmmunition > 0 && !bFireTimer)
+		if (Weapon.Weapon.CurrentAmmunition > 0 && !bFireTimer)
 		{
 			bFireTimer = true;
 			OnFireProjectile();
 		}
-		else if (Weapon.CurrentAmmunition > 0)
+		else if (Weapon.Weapon.CurrentAmmunition > 0)
 		{
 			UGameplayStatics::PlaySoundAtLocation(this, NoAmmoSound, GetActorLocation());
 		}
@@ -105,35 +112,35 @@ void AFPSCharacter::OnFireStop()
 	if (FireTimer.IsValid())
 	{
 		GetWorldTimerManager().ClearTimer(FireTimer);
-		GetWorldTimerManager().SetTimer(StopTimer, this, &AFPSCharacter::StopbFireTimer, Weapon.FireRate, false);
+		GetWorldTimerManager().SetTimer(StopTimer, this, &AFPSCharacter::StopbFireTimer, Weapon.Weapon.FireRate, false);
 	}
 }
 void AFPSCharacter::OnFireProjectile()
 {
 	// try and fire a projectile
-	if (Weapon.ProjectileClass != NULL && Weapon.FireSound != NULL)
+	if (Weapon.Weapon.ProjectileClass != nullptr && Weapon.Weapon.FireSound != nullptr)
 	{
 		const FRotator SpawnRotation = GetControlRotation();
 		// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
-		const FVector SpawnLocation = ((MuzzleLocation != nullptr) ? MuzzleLocation->GetComponentLocation() : GetActorLocation()) + SpawnRotation.RotateVector(Weapon.GunOffset);
+		const FVector SpawnLocation = ((MuzzleLocation != nullptr) ? MuzzleLocation->GetComponentLocation() : GetActorLocation()) + SpawnRotation.RotateVector(Weapon.Weapon.GunOffset);
 
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Weapon.ParticleEffect, FTransform(MuzzleLocation->GetComponentRotation(), MuzzleLocation->GetComponentLocation(), FVector(0.1, 0.1, 0.1)));
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Weapon.Weapon.ParticleEffect, FTransform(MuzzleLocation->GetComponentRotation(), MuzzleLocation->GetComponentLocation(), FVector(0.1, 0.1, 0.1)));
 
-		AddControllerPitchInput(Weapon.KickbackAmount * -1);
+		AddControllerPitchInput(Weapon.Weapon.KickbackAmount * -1);
 
 		//Set Spawn Collision Handling Override
 		FActorSpawnParameters ActorSpawnParams;
 		ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 
 		// spawn the projectile at the muzzle
-		GetWorld()->SpawnActor<AFPSProjectile>(Weapon.ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+		GetWorld()->SpawnActor<AFPSProjectile>(Weapon.Weapon.ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
 		
-		UGameplayStatics::PlaySoundAtLocation(this, Weapon.FireSound, GetActorLocation());
+		UGameplayStatics::PlaySoundAtLocation(this, Weapon.Weapon.FireSound, GetActorLocation());
 
 		KnockbackStart();
-		Weapon.CurrentAmmunition -= 1;
+		Weapon.Weapon.CurrentAmmunition -= 1;
 
-		if (Weapon.CurrentAmmunition <= 0)
+		if (Weapon.Weapon.CurrentAmmunition <= 0)
 		{
 			ReloadAnim(false);
 			bFireTimer = false;
@@ -147,7 +154,7 @@ void AFPSCharacter::OnFireProjectile()
 			{
 				if (PC->IsInputKeyDown(KeyArray[Index].Key))
 				{
-					GetWorldTimerManager().SetTimer(FireTimer, this, &AFPSCharacter::OnFireProjectile, Weapon.FireRate, false);
+					GetWorldTimerManager().SetTimer(FireTimer, this, &AFPSCharacter::OnFireProjectile, Weapon.Weapon.FireRate, false);
 				}
 			}
 		}
@@ -156,15 +163,15 @@ void AFPSCharacter::OnFireProjectile()
 void AFPSCharacter::StopbFireTimer() { bFireTimer = false; }
 void AFPSCharacter::OnReloadStart()
 {
-	if (Weapon.CurrentAmmunition < Weapon.MaxAmmunition) // && Weapon.ReloadAnimation != NULL
+	if (Weapon.Weapon.CurrentAmmunition < Weapon.Weapon.MaxAmmunition) // && Weapon.ReloadAnimation != NULL
 	{
-		PlayAnimMontage(Weapon.ReloadAnimation);
-		GetWorldTimerManager().SetTimer(ReloadTimer, this, &AFPSCharacter::OnReloadEnd, Weapon.ReloadTime, false);
+		PlayAnimMontage(Weapon.Weapon.ReloadAnimation);
+		GetWorldTimerManager().SetTimer(ReloadTimer, this, &AFPSCharacter::OnReloadEnd, Weapon.Weapon.ReloadTime, false);
 	}
 }
 void AFPSCharacter::OnReloadEnd()
 {
-	Weapon.CurrentAmmunition = Weapon.MaxAmmunition;
+	Weapon.Weapon.CurrentAmmunition = Weapon.Weapon.MaxAmmunition;
 	ReloadAnim(true);
 }
 void AFPSCharacter::MoveForward(float Value)
@@ -182,6 +189,12 @@ void AFPSCharacter::MoveRight(float Value)
 		// add movement in that direction
 		AddMovementInput(GetActorRightVector(), Value);
 	}
+}
+void AFPSCharacter::TurnHorizontal(float Val) {
+	AddControllerYawInput(Val);
+}
+void AFPSCharacter::TurnVertical(float Val) {
+	AddControllerPitchInput(Val);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -211,14 +224,14 @@ void AFPSCharacter::Tick(float DeltaTime)
 		{
 			RemoveInteraction();
 			bInteractShowing = false;
-			WeaponCast = NULL;
+			WeaponCast = nullptr;
 		}
 	}
 	else
 	{
-		if (WeaponCast != NULL)
+		if (WeaponCast != nullptr)
 		{
-			WeaponCast = NULL;
+			WeaponCast = nullptr;
 		}
 
 		if (bInteractShowing)
@@ -230,12 +243,64 @@ void AFPSCharacter::Tick(float DeltaTime)
 }
 
 //////////////////////////////////////////////////////////////////////////
+// Attachments
+void AFPSCharacter::SetWeaponSight(EWeaponSightEquipped NewSight) {
+	switch (NewSight) {
+	case EWeaponSightEquipped::WSE_None: {
+		RedDotSight->bVisible = false;
+		S56->bVisible = false;
+		break;
+	}
+	case EWeaponSightEquipped::WSE_RDot: {
+		RedDotSight->bVisible = true;
+		S56->bVisible = false;
+		break;
+	}
+	case EWeaponSightEquipped::WSE_S56: {
+		RedDotSight->bVisible = false;
+		S56->bVisible = true;
+		break;
+	}
+	}
+
+	Weapon.WeaponSight = NewSight;
+}
+void AFPSCharacter::SetWeaponGrip(EWeaponGripEquipped NewGrip) {
+	switch (NewGrip) {
+	case EWeaponGripEquipped::WGE_None: {
+		VerticalGrip->bVisible = false;
+		break;
+	}
+	case EWeaponGripEquipped::WGE_VGrip: {
+		VerticalGrip->bVisible = true;
+		break;
+	}
+	}
+
+	Weapon.WeaponGrip = NewGrip;
+}
+void AFPSCharacter::SetWeaponSuppressor(EWeaponSuppressorEquipped NewSuppressor) {
+	switch (NewSuppressor) {
+	case EWeaponSuppressorEquipped::WSUE_None: {
+		Suppressor->bVisible = false;
+		break;
+	}
+	case EWeaponSuppressorEquipped::WSUE_Standard: {
+		Suppressor->bVisible = true;
+		break;
+	}
+	}
+
+	Weapon.WeaponSuppressor = NewSuppressor;
+}
+
+//////////////////////////////////////////////////////////////////////////
 // Interaction
 void AFPSCharacter::StartInteracting()
 {
 	if (bInteractShowing && WeaponCast)
 	{
-		if (WeaponCast->Weapon.CurrentAmmunition <= 0)
+		if (WeaponCast->Weapon.Weapon.CurrentAmmunition <= 0)
 		{
 			ReloadAnim(false);
 		}
@@ -253,7 +318,7 @@ void AFPSCharacter::StartInteracting()
 			GetWorldTimerManager().ClearTimer(ReloadTimer);
 		}
 
-		if (GunMesh->SkeletalMesh != NULL)
+		if (GunMesh->SkeletalMesh != nullptr)
 		{
 			USkeletalMesh* NewGunMesh = WeaponCast->GetGunMesh()->SkeletalMesh;
 			FVector NewMuzzleLocation = WeaponCast->GetMuzzleLocation()->RelativeLocation;
@@ -264,18 +329,33 @@ void AFPSCharacter::StartInteracting()
 			WeaponCast->GetMuzzleLocation()->SetRelativeLocation(MuzzleLocation->RelativeLocation);
 			WeaponCast->GetEmptyShellSpawnLocation()->SetRelativeLocation(EmptyShellSpawnLocation->RelativeLocation);
 			WeaponCast->Weapon = Weapon;
+			WeaponCast->SetWeaponGrip(Weapon.WeaponGrip);
+			WeaponCast->SetWeaponSight(Weapon.WeaponSight);
+			WeaponCast->SetWeaponSuppressor(Weapon.WeaponSuppressor);
 
 			GunMesh->SetSkeletalMesh(NewGunMesh);
 			MuzzleLocation->SetRelativeLocation(NewMuzzleLocation);
 			EmptyShellSpawnLocation->SetRelativeLocation(NewEmptyShellSpawnLocation);
 			Weapon = NewWeapon;
+			WeaponCast->SetWeaponGrip(NewWeapon.WeaponGrip);
+			WeaponCast->SetWeaponSight(NewWeapon.WeaponSight);
+			WeaponCast->SetWeaponSuppressor(NewWeapon.WeaponSuppressor);
 		}
 		else
 		{
 			GunMesh->SetSkeletalMesh(WeaponCast->GetGunMesh()->SkeletalMesh);
 			MuzzleLocation->SetRelativeLocation(WeaponCast->GetMuzzleLocation()->RelativeLocation);
 			EmptyShellSpawnLocation->SetRelativeLocation(WeaponCast->GetEmptyShellSpawnLocation()->RelativeLocation);
+
+			S56->SetRelativeLocation(WeaponCast->GetS56()->RelativeLocation);
+			RedDotSight->SetRelativeLocation(WeaponCast->GetRedDotSight()->RelativeLocation);
+			VerticalGrip->SetRelativeLocation(WeaponCast->GetVerticalGrip()->RelativeLocation);
+			Suppressor->SetRelativeLocation(WeaponCast->GetSuppressor()->RelativeLocation);
+
 			Weapon = WeaponCast->Weapon;
+			SetWeaponGrip(WeaponCast->Weapon.WeaponGrip);
+			SetWeaponSight(WeaponCast->Weapon.WeaponSight);
+			SetWeaponSuppressor(WeaponCast->Weapon.WeaponSuppressor);
 
 			WeaponCast->Destroy(true, true);
 		}
