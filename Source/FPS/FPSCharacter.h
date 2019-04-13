@@ -86,12 +86,6 @@ protected:
 	UFUNCTION() 
 		void MoveRight(float Val);
 
-	UFUNCTION()
-		void TurnHorizontal(float Val);
-
-	UFUNCTION()
-		void TurnVertical(float Val);
-
 	/** Handles the start of the interaction */
 	UFUNCTION() 
 		void StartInteracting();

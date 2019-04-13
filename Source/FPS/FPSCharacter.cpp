@@ -38,7 +38,7 @@ AFPSCharacter::AFPSCharacter()
 	GunMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GunMesh"));
 	GunMesh->bCastDynamicShadow = false;
 	GunMesh->CastShadow = false;
-	GunMesh->SetupAttachment(GetMesh());
+	GunMesh->SetupAttachment(Camera);
 
 	Suppressor = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Suppressor"));
 	Suppressor->SetupAttachment(GunMesh);
@@ -84,8 +84,8 @@ void AFPSCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInput
 	// Bind movement events
 	PlayerInputComponent->BindAxis("MoveForward", this, &AFPSCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AFPSCharacter::MoveRight);
-	PlayerInputComponent->BindAxis("Turn", this, &AFPSCharacter::TurnHorizontal);
-	PlayerInputComponent->BindAxis("LookUp", this, &AFPSCharacter::TurnVertical);
+	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 }
 void AFPSCharacter::OnFireStart()
 {
@@ -189,12 +189,6 @@ void AFPSCharacter::MoveRight(float Value)
 		// add movement in that direction
 		AddMovementInput(GetActorRightVector(), Value);
 	}
-}
-void AFPSCharacter::TurnHorizontal(float Val) {
-	AddControllerYawInput(Val);
-}
-void AFPSCharacter::TurnVertical(float Val) {
-	AddControllerPitchInput(Val);
 }
 
 //////////////////////////////////////////////////////////////////////////
