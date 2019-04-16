@@ -50,6 +50,9 @@ public:
 	/** Is the fire timer */
 	UPROPERTY(BlueprintReadOnly, Category = Gameplay) bool bFireTimer;
 
+	/** Is the player aiming */
+	UPROPERTY(BlueprintReadWrite, Category = Gameplay) bool bAiming;
+
 protected:
 	/** Called every frame */
 	virtual void Tick(float DeltaSeconds) override;

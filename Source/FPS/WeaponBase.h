@@ -35,7 +35,7 @@ public:
 	// Sets default values for this actor's properties
 	AWeaponBase();
 
-	UPROPERTY(EditAnywhere, Category = Combat) FWeaponStruct Weapon;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = Combat) FWeaponStruct Weapon;
 
 	UFUNCTION(BlueprintCallable, Category = Attachments) 
 		void SetWeaponSight(EWeaponSightEquipped NewSight);

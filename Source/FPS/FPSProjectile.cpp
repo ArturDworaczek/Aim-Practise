@@ -5,6 +5,9 @@
 #include "Components/SphereComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Engine.h"
+#include "GameFramework/Character.h"
+#include "Engine/DecalActor.h"
+#include "Components/DecalComponent.h"
 
 AFPSProjectile::AFPSProjectile() 
 {
@@ -28,9 +31,38 @@ AFPSProjectile::AFPSProjectile()
 	ProjectileMovement->MaxSpeed = 3000.f;
 	ProjectileMovement->bRotationFollowsVelocity = true;
 	ProjectileMovement->bShouldBounce = true;
+
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> BulletHoleMaterialFound(TEXT("Material'/Game/FPS_TR/Blueprints/Ammunition/BulletDecal/BulletHoleDecal.BulletHoleDecal'"));
+	if (BulletHoleMaterialFound.Object) {
+		BulletHoleMaterial = BulletHoleMaterialFound.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> BloodSplatterMaterialFound(TEXT("Material'/Game/FPS_TR/Blueprints/Ammunition/BulletDecal/BloodSplatterDecal.BloodSplatterDecal'"));
+	if (BloodSplatterMaterialFound.Object) {
+		BloodSplatterMaterial = BloodSplatterMaterialFound.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<USoundWave> HitMarkerSoundFound(TEXT("SoundWave'/Game/FPS_TR/Audio/BloodSplatterSound.BloodSplatterSound'"));
+	if (HitMarkerSoundFound.Object) {
+		HitMarkerSound = HitMarkerSoundFound.Object;
+	}
 }
 
 void AFPSProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	ADecalActor* Decal = GetWorld()->SpawnActor<ADecalActor>(Hit.Location, FRotator());
+	if (Decal) {
+		ACharacter* CharacterCast = Cast<ACharacter>(Hit.Actor);
+		if (CharacterCast == nullptr) {
+			Decal->SetDecalMaterial(BulletHoleMaterial);
+		}
+		else {
+			UGameplayStatics::PlaySoundAtLocation(this, HitMarkerSound, GetActorLocation());
+			Decal->SetDecalMaterial(BloodSplatterMaterial);
+		}
+		Decal->SetLifeSpan(5.0f);
+		Decal->GetDecal()->DecalSize = FVector(4.0f, 8.0f, 8.0f);
+	}
+
 	Destroy();
 }

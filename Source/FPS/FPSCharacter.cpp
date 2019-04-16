@@ -122,7 +122,13 @@ void AFPSCharacter::OnFireProjectile()
 	{
 		const FRotator SpawnRotation = GetControlRotation();
 		// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
-		const FVector SpawnLocation = ((MuzzleLocation != nullptr) ? MuzzleLocation->GetComponentLocation() : GetActorLocation()) + SpawnRotation.RotateVector(Weapon.Weapon.GunOffset);
+		FVector SpawnLocation;
+		if (!bAiming) {
+			SpawnLocation = ((MuzzleLocation != nullptr) ? MuzzleLocation->GetComponentLocation() : GetActorLocation()) + SpawnRotation.RotateVector(Weapon.Weapon.GunOffset);
+		}
+		else {
+			SpawnLocation = ((MuzzleLocation != nullptr) ? MuzzleLocation->GetComponentLocation() : GetActorLocation());
+		}
 
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Weapon.Weapon.ParticleEffect, FTransform(MuzzleLocation->GetComponentRotation(), MuzzleLocation->GetComponentLocation(), FVector(0.1, 0.1, 0.1)));
 

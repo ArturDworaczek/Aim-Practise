@@ -19,6 +19,16 @@ class AFPSProjectile : public AActor
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement, meta = (AllowPrivateAccess = "true"))
 	class UProjectileMovementComponent* ProjectileMovement;
 
+	/** Projectile decal material after hitting */
+	UPROPERTY()
+	UMaterialInterface* BulletHoleMaterial;
+	UPROPERTY()
+	UMaterialInterface* BloodSplatterMaterial;
+
+	/** Sound cue to play after hitting a character */
+	UPROPERTY()
+	USoundWave* HitMarkerSound;
+
 public:
 	AFPSProjectile();
 
