@@ -139,7 +139,10 @@ void AFPSCharacter::OnFireProjectile()
 		ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 
 		// spawn the projectile at the muzzle
-		GetWorld()->SpawnActor<AFPSProjectile>(Weapon.Weapon.ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+		AFPSProjectile* Projectile = GetWorld()->SpawnActor<AFPSProjectile>(Weapon.Weapon.ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+		if (Projectile) {
+			Projectile->ProjectileDamage = Weapon.Weapon.WeaponDamage;
+		}
 		
 		UGameplayStatics::PlaySoundAtLocation(this, Weapon.Weapon.FireSound, GetActorLocation());
 

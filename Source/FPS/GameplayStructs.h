@@ -35,6 +35,8 @@ struct FWeaponDetailsStruct
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Gameplay) float ReloadTime;
 	/** Kickback amount to kick up after a shot */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Gameplay) float KickbackAmount;
+	/** Weapon damage amount */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Gameplay) float WeaponDamage;
 };
 
 UENUM(BlueprintType)

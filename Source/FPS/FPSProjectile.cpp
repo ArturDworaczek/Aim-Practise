@@ -5,9 +5,9 @@
 #include "Components/SphereComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Engine.h"
-#include "GameFramework/Character.h"
 #include "Engine/DecalActor.h"
 #include "Components/DecalComponent.h"
+#include "TargetCharacter.h"
 
 AFPSProjectile::AFPSProjectile() 
 {
@@ -42,9 +42,9 @@ AFPSProjectile::AFPSProjectile()
 		BloodSplatterMaterial = BloodSplatterMaterialFound.Object;
 	}
 
-	static ConstructorHelpers::FObjectFinder<USoundWave> HitMarkerSoundFound(TEXT("SoundWave'/Game/FPS_TR/Audio/BloodSplatterSound.BloodSplatterSound'"));
-	if (HitMarkerSoundFound.Object) {
-		HitMarkerSound = HitMarkerSoundFound.Object;
+	static ConstructorHelpers::FObjectFinder<USoundWave> HitSoundFound(TEXT("SoundWave'/Game/FPS_TR/Audio/BloodSplatterSound.BloodSplatterSound'"));
+	if (HitSoundFound.Object) {
+		HitSound = HitSoundFound.Object;
 	}
 }
 
@@ -52,13 +52,15 @@ void AFPSProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPr
 {
 	ADecalActor* Decal = GetWorld()->SpawnActor<ADecalActor>(Hit.Location, FRotator());
 	if (Decal) {
-		ACharacter* CharacterCast = Cast<ACharacter>(Hit.Actor);
-		if (CharacterCast == nullptr) {
+		ATargetCharacter* TargetCast = Cast<ATargetCharacter>(Hit.Actor);
+		if (TargetCast == nullptr) {
 			Decal->SetDecalMaterial(BulletHoleMaterial);
 		}
 		else {
-			UGameplayStatics::PlaySoundAtLocation(this, HitMarkerSound, GetActorLocation());
+			UGameplayStatics::PlaySoundAtLocation(this, HitSound, GetActorLocation());
 			Decal->SetDecalMaterial(BloodSplatterMaterial);
+
+			TargetCast->DamageTarget(ProjectileDamage);
 		}
 		Decal->SetLifeSpan(5.0f);
 		Decal->GetDecal()->DecalSize = FVector(4.0f, 8.0f, 8.0f);
